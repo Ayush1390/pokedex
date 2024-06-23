@@ -6,7 +6,7 @@ function App() {
 
   return (
     <div className='outer-wrapper'>
-      <h1><Link to={'/'} id='pokedex-heading'>Pokedex</Link></h1>
+      <h1 className='pokemon-heading-wrapper'><Link to={'/'} id='pokedex-heading'>Pokedex</Link></h1>
       <CustomRoutes/>
     </div>
   )

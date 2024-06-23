@@ -14,30 +14,48 @@ import Pokemon from "../Pokemon/Pokemon";
 
 function PokemonList(){
 
-    const [pokemonList, setPokemonList] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    // const [pokemonList, setPokemonList] = useState([]);
+    // const [isLoading, setIsLoading] = useState(true);
+    // const [pokedexUrl,setPokedexUrl] = useState('https://pokeapi.co/api/v2/pokemon');
+    // const [nextUrl,setNextUrl] = useState('');
+    // const [prevUrl,setPrevUrl] = useState('');
 
-    const [pokedexUrl,setPokedexUrl] = useState('https://pokeapi.co/api/v2/pokemon');
+    //                       or
 
-    const [nextUrl,setNextUrl] = useState('');
-    const [prevUrl,setPrevUrl] = useState('');
+    const [pokemonListState, setPokemonListState] = useState({
+        pokemonList: [],
+        isLoading: true,
+        pokedexUrl: 'https://pokeapi.co/api/v2/pokemon',
+        nextUrl: '',
+        prevUrl: ''
+    })
 
     async function downloadPokemons(){
-        setIsLoading(true);
-        const response = await axios.get(pokedexUrl); 
-        
-        // console.log(response.data);
 
-        setNextUrl(response.data.next);
-        setPrevUrl(response.data.previous);
+        // setIsLoading(true);
+        //              or
+        setPokemonListState((state)=>({...state, isLoading:true}));
         
-        const pokemonResults = response.data.results;
+        // const response = await axios.get(pokedexUrl); 
+        //              or
+        const response = await axios.get(pokemonListState.pokedexUrl);
+    
+
+        // setNextUrl(response.data.next);
+        // setPrevUrl(response.data.previous);
+        //              or
+        setPokemonListState((state)=>({
+            ...state, 
+            nextUrl:response.data.next, 
+            prevUrl:response.data.previous
+        }));
+
+
         
+        const pokemonResults = response.data.results; 
         const pokemonResultPromise = pokemonResults.map((pokemon)=> axios.get(pokemon.url))
-        
         const pokemonData = await axios.all(pokemonResultPromise);
         
-        // console.log(pokemonData);
 
         const res = pokemonData.map((pokeData)=>{
             const pokemon = pokeData.data;
@@ -49,29 +67,42 @@ function PokemonList(){
             }
         })
 
-        // console.log(res);
-
-        setPokemonList(res);
-
-        setIsLoading(false);
+        // setPokemonList(res);
+        // setIsLoading(false);
+        //              or
+        setPokemonListState((state)=>({
+            ...state, 
+            pokemonList:res, 
+            isLoading:false
+        }));
     }
 
+    // useEffect(()=>{
+    //     downloadPokemons();
+    // },[pokedexUrl])
+    //          or
     useEffect(()=>{
         downloadPokemons();
-    },[pokedexUrl])
+    },[pokemonListState.pokedexUrl])
 
     return(
         <div className="pokemon-list-wrapper">
            <div className="pokemon-list-heading">Pokemon List</div>
            <div className="pokemon-wrapper">
             {   
-                (isLoading)? 'Loading...':
-                pokemonList.map((p) => <Pokemon name={p.name} image={p.image} key={p.id} id={p.id} />) 
+                // (isLoading)? 'Loading...':
+                // pokemonList.map((p) => <Pokemon name={p.name} image={p.image} key={p.id} id={p.id} />) 
+                //              or
+                (pokemonListState.isLoading)? 'Loading...':
+                pokemonListState.pokemonList.map((p) => <Pokemon name={p.name} image={p.image} key={p.id} id={p.id} />) 
             }
            </div>
            <div className="controls">
-                <button className="btn" disabled={!prevUrl} onClick={()=> setPokedexUrl(prevUrl)} >Prev</button>
-                <button className="btn" disabled={!nextUrl} onClick={()=> setPokedexUrl(nextUrl)} >Next</button>
+                {/* <button className="btn" disabled={!prevUrl} onClick={()=> setPokedexUrl(prevUrl)} >Prev</button>
+                <button className="btn" disabled={!nextUrl} onClick={()=> setPokedexUrl(nextUrl)} >Next</button> */}
+                {/*                 or               */}
+                <button className="btn" disabled={pokemonListState.prevUrl === null} onClick={()=> setPokemonListState((state)=>({...state, pokedexUrl:state.prevUrl}))} >Prev</button>
+                <button className="btn" disabled={pokemonListState.nextUrl === null} onClick={()=> setPokemonListState((state)=>({...state, pokedexUrl:state.nextUrl}))} >Next</button>
            </div>
         </div>
     )
